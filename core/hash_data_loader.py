@@ -1,7 +1,7 @@
 import pickle
 from pathlib import Path
 
-PROCESSED_PATH = Path("../data/processed/rockyou_hashes.pkl")
+PROCESSED_PATH = Path("data/processed/rockyou_hashes.pkl")
 
 def load_rockyou_hashes() -> set:
     # Load the RockYou password hashes as a set
