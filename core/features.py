@@ -1,3 +1,4 @@
+import re
 import urllib.request
 import ahocorasick
 from datetime import datetime
@@ -48,20 +49,16 @@ def contains_dictionary_word(password, min_length=3):
     return False
 
 def contains_date(password):
-    # only check if password is numeric and is long enough to contain date
-    if not password.isdigit():
-        return False
-    
-    n = len(password)
-    if n not in (6, 8):
-        return False
-    
-    for fmt in DATE_FORMATS:
-        try:
-            datetime.strptime(password, fmt)
-            return True
-        except ValueError:
-            continue
+    candidates = re.findall(r"\d{6,8}", password)
+
+    for chunk in candidates:
+        for format in DATE_FORMATS:
+            try:
+                datetime.strptime(chunk, format)
+                return True
+            except ValueError:
+                pass
+
     return False
 
 def get_features(password):
