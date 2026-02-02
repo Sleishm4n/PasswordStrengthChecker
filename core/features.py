@@ -88,7 +88,7 @@ def get_features(password):
         "digits_count": digits,
         "symbol_count": symbols,
         "upper_count": upper,
-        "lowercase_count": lower,
+        "lower_count": lower,
         "repeated_chars": n - n_uniq,
         "sequential_chars": count_consecutive_repeated_chars(password),
         "dictionary_word": has_letters and contains_dictionary_word(password),

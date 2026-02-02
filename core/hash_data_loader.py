@@ -3,9 +3,16 @@ from pathlib import Path
 
 PROCESSED_PATH = Path("data/processed/rockyou_hashes.pkl")
 
-def load_rockyou_hashes() -> set:
-    # Load the RockYou password hashes as a set
-    with open(PROCESSED_PATH, "rb") as f:
-        return pickle.load(f)
+_hashes = None
 
-rockyou_hashes = load_rockyou_hashes()
+def load_rockyou_hashes() -> set:
+    global _hashes
+    if _hashes is None:
+        with open(PROCESSED_PATH, "rb") as f:
+            _hashes = pickle.load(f)
+
+    return _hashes
+
+def rockyou_contains(pw_hash):
+    hashes = load_rockyou_hashes()
+    return pw_hash in hashes

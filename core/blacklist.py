@@ -1,11 +1,11 @@
 import hashlib
-from hash_data_loader import rockyou_hashes
+from hash_data_loader import rockyou_contains
 
 def hash_sha256(password):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def blacklist(password):
-    return hash_sha256(password) in rockyou_hashes
+    return rockyou_contains(hash_sha256(password))
 
 def main():  
     while True:

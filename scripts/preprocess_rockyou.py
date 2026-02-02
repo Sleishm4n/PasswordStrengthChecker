@@ -1,13 +1,11 @@
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import hashlib
 import pickle
 from collections import Counter
-from pathlib import Path
-from tqdm import tqdm
-from core.features import *
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tqdm.auto import tqdm
+from core.features import get_features
 
 RAW_PATH = Path("data/raw/rockyou.txt")
 PKL_OUT_PATH = Path("data/processed/rockyou_hashes.pkl")
@@ -29,7 +27,7 @@ def main():
                 continue
 
             h = hash_sha256(pw)
-            counts[h] += 1
+            counts[h] = counts.get(h, 0) + 1
             if h not in features:
                 features[h] = get_features(pw)
 
