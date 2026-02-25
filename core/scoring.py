@@ -1,6 +1,12 @@
+import sys
+from pathlib import Path
 from blacklist import blacklist
 from features import get_features
 from entropy import shannon_entropy, policy_entropy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from ml.predictor import ml_score as get_ml_score
 
 def get_usr_pw():
     return input("Enter a password: ").strip()
@@ -8,7 +14,7 @@ def get_usr_pw():
 def normalise(x, low=0, high=100):
     return max(low, min(x, high))
      
-def score_password(features, shan_entropy, pol_entropy, leaked):
+def score_password(features, shan_entropy, leaked, password):
     score = 100
     reasons = []
 
@@ -25,12 +31,10 @@ def score_password(features, shan_entropy, pol_entropy, leaked):
         score -= 10
         reasons.append("Password could be longer")
 
-    entropy = 0.7 * shan_entropy + 0.3 * pol_entropy
-
-    if entropy < 30:
+    if shan_entropy < 2.5:
         score -= 20
         reasons.append("Entropy is low for length")
-    elif entropy < 50:
+    elif shan_entropy < 3.2:
         score -= 10
 
     variety = 0
@@ -61,31 +65,42 @@ def score_password(features, shan_entropy, pol_entropy, leaked):
         score -= 10
         reasons.append("Has repeated character runs")
 
-    if features["repeated_chars"] > features["length"] * 0.4:
+    if features["repeated_chars"] > features["length"] * 0.6:
         score -= 10
         reasons.append("Too many repeated characters overall")
 
-    score = normalise(score)
+    if score >= 80:
+        ML_WEIGHT = 0.1
+        RULE_WEIGHT = 0.9
+    elif score >= 60:
+        ML_WEIGHT = 0.3
+        RULE_WEIGHT = 0.7
+    else:
+        ML_WEIGHT = 0.5
+        RULE_WEIGHT = 0.5
 
-    if score < 20:
+    ml = get_ml_score(password)
+    ml_adjusted = max(ml["ml_score"], score * 0.6)
+    final_score = (RULE_WEIGHT * score) + (ML_WEIGHT * ml_adjusted)
+    final_score = normalise(final_score)
+
+    if final_score < 20:
         label = "Very Weak"
-    elif score < 40:
+    elif final_score < 40:
         label = "Weak"
-    elif score < 60:
+    elif final_score < 60:
         label = "Medium"
-    elif score < 80:
+    elif final_score < 80:
         label = "Strong"
     else:
         label = "Very Strong"
 
-    if not reasons:
-        reasons.append("Good length, entropy, and character variety")
-
     return {
-        "score": score,
+        "score": round(final_score),
         "label": label,
-        "entropy": round(entropy, 2),
-        "reasons": reasons
+        "entropy": round(shan_entropy, 2),  # keep using real shannon here
+        "reasons": reasons,
+        "ml": ml,  # expose probabilities for UI later
     }
 
 def main():
@@ -95,9 +110,8 @@ def main():
     
     features = get_features(pw)
     shan_entropy = shannon_entropy(pw)
-    pol_entropy = policy_entropy(pw)
 
-    result = score_password(features, shan_entropy, pol_entropy, leaked)
+    result = score_password(features, shan_entropy, leaked, pw)
 
     print(result)
 

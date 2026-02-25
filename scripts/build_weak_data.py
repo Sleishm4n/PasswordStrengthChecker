@@ -15,11 +15,11 @@ def main():
 
     x, y = [], []
 
-    for feature in tqdm(rockyou.values()):
+    for password, feature in tqdm(rockyou.items()):
         length = feature["length"]
 
-        shan = length * 2
-        pol = length * 2
+        shan = shannon_entropy(password)
+        pol = policy_entropy(password)
 
         vector = [
             feature["length"],

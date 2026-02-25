@@ -27,4 +27,4 @@ def shannon_entropy(password):
         p = c / n
         entropy -= p * math.log2(p)
 
-    return entropy * n
+    return entropy

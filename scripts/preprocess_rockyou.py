@@ -28,8 +28,8 @@ def main():
 
             h = hash_sha256(pw)
             counts[h] = counts.get(h, 0) + 1
-            if h not in features:
-                features[h] = get_features(pw)
+            if pw not in features:
+                features[pw] = get_features(pw)
 
     PKL_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
